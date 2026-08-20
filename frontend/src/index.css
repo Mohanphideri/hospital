@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    /* Stops the default blue/grey flash some mobile browsers apply to any
+       tapped element - buttons with a white background were showing this as
+       an odd colour change instead of our own hover/active states. */
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-surface text-text-primary font-body antialiased;
+  }
+  button {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
+  html.dark body {
+    @apply bg-[#0B1220] text-slate-100;
+  }
+  /* Typed/entered text in form fields was inheriting whatever text color
+     happened to be in scope, which in some contexts (tables, cards with
+     muted text, dark mode, or a component that set its own lighter text-*
+     utility class on an <input>) came out too light to read against its
+     background - sometimes light text on a light box, sometimes dark text
+     on a dark box. Forcing a plain white box + black typed text everywhere,
+     in both themes, sidesteps all of that instead of trying to track down
+     every place a mismatched color could sneak in. `!important` on both
+     properties is deliberate: a plain `@layer base` rule can still lose to
+     a same-specificity Tailwind utility class (e.g. `bg-slate-800` or
+     `text-slate-400` picked for a card/dark-mode variant and left on the
+     input too) since Tailwind's own utilities layer is ordered after base
+     regardless of source order - `!important` makes this the one rule
+     nothing else can quietly override, in light or dark mode alike. */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea {
+    background-color: #ffffff !important;
+    color: #0f172a !important; /* slate-900 */
+  }
+  input::placeholder, textarea::placeholder {
+    color: #94a3b8 !important; /* slate-400 */
+    opacity: 1;
+  }
+  html.dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), html.dark select, html.dark textarea {
+    background-color: #ffffff !important;
+    color: #0f172a !important; /* slate-900 - same as light mode, on purpose */
+  }
+  html.dark input::placeholder, html.dark textarea::placeholder {
+    color: #94a3b8 !important; /* slate-400 */
+    opacity: 1;
+  }
+  :focus-visible {
+    outline: 2px solid #0F1F3D;
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer utilities {
+  .eyebrow {
+    @apply text-[11px] tracking-widest2 uppercase text-slate-soft font-semibold;
+  }
+  /* Enterprise surface used by dark-mode-aware cards/panels */
+  .surface-card {
+    @apply bg-card border border-slate-200 rounded-card shadow-card transition-shadow duration-200;
+  }
+  html.dark .surface-card {
+    @apply bg-[#111827] border-slate-800;
+  }
+}
