@@ -174,7 +174,12 @@ export const sendPatientChatbotMessage = async (req, res) => {
       contents.push(modelContent);
       for (const call of calls) {
         const result = await runTool(call.name, call.args || {}, req);
-        contents.push({ role: 'user', parts: [{ functionResponse: { name: call.name, response: result } }] });
+        // Gemini's functionResponse.response field must be a JSON object (proto
+        // Struct), never a bare array - several tools return arrays directly
+        // (get_departments, get_my_appointments, etc.), so wrap those.
+        const responsePayload =
+          result && typeof result === 'object' && !Array.isArray(result) ? result : { result };
+        contents.push({ role: 'user', parts: [{ functionResponse: { name: call.name, response: responsePayload } }] });
       }
     }
     return res.status(502).json({ error: 'The assistant could not complete that request. Please try again.' });
